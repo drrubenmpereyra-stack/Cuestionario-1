@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación Intersubjetividad - Clínica de la Convergencia</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { 
+            background-color: #000000; 
+            font-family: Arial, sans-serif; 
+            color: #ffffff; 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        #app-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .app-header {
+            border: 1.5px solid #D4AF37;
+            background: #050508;
+            padding: 30px;
+            border-radius: 4px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+        }
+        .app-title {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            color: #D4AF37;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+        .app-subtitle {
+            font-size: 11px;
+            color: #8a8b8c;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .question-card {
+            background: #050508;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 30px;
+            margin-bottom: 25px;
+            display: none;
+            transition: all 0.3s ease;
+        }
+        .question-card.active { display: block; }
+
+        .question-meta {
+            font-family: monospace;
+            font-size: 12px;
+            color: #00e5ff;
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .question-text {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            font-weight: bold;
+            color: #cbd5e1;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .option-item {
+            background: #000000;
+            border: 1px solid #334155;
+            padding: 14px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+        .option-item:hover {
+            border-color: #64748b;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .option-item.selected {
+            border-color: #D4AF37;
+            background: rgba(212, 175, 55, 0.03);
+        }
+        .option-prefix {
+            font-family: monospace;
+            font-weight: bold;
+            color: #D4AF37;
+        }
+
+        .options-list.locked .option-item {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .options-list.locked .option-item.selected { opacity: 1; }
+        .options-list.locked .option-item.correct-answer {
+            border-color: #00FF88 !important;
+            background: rgba(0, 255, 136, 0.04) !important;
+            opacity: 1;
+        }
+        .options-list.locked .option-item.wrong-answer {
+            border-color: #ff2a5f !important;
+            background: rgba(255, 42, 95, 0.04) !important;
+        }
+
+        .feedback-container {
+            display: none;
+            padding: 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: 20px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .feedback-container.success {
+            display: block;
+            background: #000000;
+            border: 1.5px solid #00FF88;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
+        }
+        .feedback-container.error {
+            display: block;
+            background: #000000;
+            border: 1.5px solid #ff2a5f;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 42, 95, 0.1);
+        }
+        .feedback-header {
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .action-btn {
+            background: transparent;
+            border: 1.5px solid #D4AF37;
+            color: #D4AF37;
+            padding: 10px 24px;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .action-btn:hover {
+            background: #D4AF37;
+            color: #000000;
+            box-shadow: 0 0 15px #D4AF37;
+        }
+        .action-btn:disabled {
+            border-color: #475569;
+            color: #475569;
+            cursor: not-allowed;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        #results-card {
+            display: none;
+            background: #050508;
+            border: 2px solid #D4AF37;
+            border-radius: 6px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+        }
+        .score-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 4px solid #D4AF37;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 25px auto;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
+        }
+        .score-num { font-size: 42px; font-weight: bold; font-family: monospace; color: #D4AF37; }
+        .score-label { font-size: 10px; color: #8a8b8c; text-transform: uppercase; margin-top: 2px; }
+        .dictamen-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            max-width: 650px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div class="app-header">
+            <h1 class="app-title">Clínica de la Convergencia</h1>
+            <p class="app-subtitle">Evaluación: Cartografía de la Intersubjetividad (Encuentro 1)</p>
+        </div>
+
+        <div id="quiz-viewport"></div>
+
+        <div id="results-card">
+            <h2 class="app-title" style="font-size: 22px;">Protocolo Completado</h2>
+            <p class="app-subtitle" style="color: #64748b;">Mapeo de Competencia Neurobiológica Relacional</p>
+            <div class="score-circle">
+                <span id="final-score" class="score-num">0/10</span>
+                <span class="score-label">Aciertos</span>
+            </div>
+            <div id="final-dictamen" class="dictamen-text"></div>
+            <button class="action-btn" style="margin-top: 15px;" onclick="reiniciarQuiz()">Reiniciar Módulo</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                q: "Desde el marco de la Clínica de la Convergencia, ¿cuál es la función biológica primordial que ejerce la presencia física y psíquica del terapeuta sobre el paciente? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "Provocar una catarsis emocional inmediata mediante la asociación libre.",
+                    "Actuar como un regulador alostático externo del eje Hipotálamo-Pituitario-Adrenal (HPA).",
+                    "Estimular exclusivamente la vía indirecta de los ganglios basales.",
+                    "Inducir un bloqueo metabólico completo de la secreción de oxitocina."
+                ],
+                correct: 1,
+                feedbackSuccess: "¡Excelente! La presencia del analista funciona como un 'regulador alostático externo'. El paciente llega con un eje HPA hiperreactivo o agotado por traumas primitivos, y el espacio analítico interviene directamente modulando esta respuesta neurobiológica al estrés.",
+                feedbackFail: "Orientación: Revisa la introducción del material sobre el papel del terapeuta como regulador externo. La meta en este encuadre trasciende el insight abstracto; se busca la modificación biológica de los patrones de respuesta al estrés mediante la presencia interactiva."
+            },
+            {
+                q: "Cuando se establece una base segura dentro de la alianza terapéutica, ¿qué efectos neurobiológicos específicos ocurren en el sistema límbico y endocrino? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "Aumento de CRH en el hipotálamo y disminución generalizada de oxitocina.",
+                    "Inhibición amigdalina (reduciendo la descarga de CRH) y fomento de la liberación de oxitocina.",
+                    "Secuestro amigdalino masivo con picos agudos e incontrolables de cortisol.",
+                    "Desconexión total de la corteza prefrontal ventromedial."
+                ],
+                correct: 1,
+                feedbackSuccess: "¡Correcto! La validación y la calidez dentro de la alianza disminuyen la reactividad de la amígdala, reduciendo la liberación de Hormona Liberadora de Corticotropina (CRH) en el hipotálamo, mientras que la oxitocina liberada actúa como un antagonista directo del cortisol.",
+                feedbackFail: "Orientación: Analiza el apartado sobre la Alianza Terapéutica como modulador del eje HPA. Busca el equilibrio neuroquímico que frena la alarma límbica y promueve la neuroplasticidad mediante un entorno vincular de seguridad."
+            },
+            {
+                q: "¿Qué fenómeno clínico-biológico define el concepto de 'Re-edición Biológica' durante el despliegue de la transferencia en sesión? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "La eliminación definitiva de la memoria procedimental sin intervención cortical.",
+                    "La activación real del eje HPA en el 'aquí y ahora' de la sesión al proyectar un objeto persecutorio.",
+                    "Una parálisis de conversión generada por la desconexión del hipocampo.",
+                    "La sincronización de husos de sueño delta en estado de vigilia analítica."
+                ],
+                correct: 1,
+                feedbackSuccess: "¡Brillante! Si el paciente transfiere un objeto persecutorio, su cerebro procesa la situación como una amenaza real, gatillando un pico de cortisol en el acto. Esto permite que el conflicto ocurra vivamente en sesión para poder ser metabolizado.",
+                feedbackFail: "Orientación: Revisa el apartado de la Transferencia como el escenario de regulación del cortisol. La re-edición implica que los esquemas relacionales del pasado activan el sistema biológico del estrés en el tiempo presente de la consulta."
+            },
+            {
+                q: "Si el analista sostiene la neutralidad técnica y analiza su propia contratransferencia ante un pico de transferencia negativa, ¿qué proceso neurocognitivo se promueve en el paciente? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "Un secuestro permanente de la capacidad simbólica y del hipocampo.",
+                    "Un error de predicción social que induce la extinción del miedo a nivel de la corteza prefrontal ventromedial.",
+                    "La estimulación disfuncional de receptores de glucocorticoides periféricos.",
+                    "Un pasaje al acto destructivo irreversible."
+                ],
+                correct: 1,
+                feedbackSuccess: "¡Es correcto! Al no responder de forma punitiva a la provocación (rompiendo el guion repetitivo del paciente), se produce un error de predicción social. Esto facilita la extinción del miedo y permite pasar de un estado de supervivencia a uno de reflexión bajo dominio prefrontal.",
+                feedbackFail: "Orientación: Observa el esquema de la regulación del cortisol a través de la transferencia. El freno a la repetición destructiva surge cuando la respuesta asimétrica del terapeuta habilita al córtex prefrontal ventromedial a inhibir la alarma de la amígdala."
+            },
+            {
+                q: "Frente a signos de activación somática aguda en el paciente (taquicardia, sudoración o bloqueo discursivo), ¿cuál debe ser la acción clínica inmediata según el enfoque en el 'Aquí y Ahora'? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "Ofrecer una interpretación genética profunda sobre el trauma de la infancia temprana.",
+                    "Mantener un silencio prolongado y estricto para profundizar la asociación libre.",
+                    "Intervenir sobre la relación actual nombrando la transferencia para reclutar funciones ejecutivas prefrontales.",
+                    "Derivar inmediatamente al paciente a una guardia médica para controlar los signos vitales."
+                ],
+                correct: 2,
+                feedbackSuccess: "¡Extraordinario! Al nombrar la transferencia en el instante de la activación ('Noto que al hablar de su jefe... parece estar alerta conmigo también'), se reclutan de inmediato funciones ejecutivas prefrontales que actúan deteniendo la cascada neuroendocrina de cortisol.",
+                feedbackFail: "Orientación: Consulta la estrategia A (Regulación en Tiempo Real). Cuando la inundación somática bloquea al sujeto, la interpretación histórica fracasa. Se requiere anclar la atención en la relación actual terapeuta-paciente para recuperar control cortical."
+            },
+            {
+                q: "¿Por qué la técnica de la 'Validación Empática' (Estrategia B) está indicada como un 'freno de emergencia' antes de realizar interpretaciones profundas? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "Porque el cortisol elevado inhibe temporalmente el hipocampo, impidiendo que el paciente asimile o recuerde una interpretación analítica.",
+                    "Porque la validación destruye la transferencia positiva de forma permanente.",
+                    "Porque es necesario activar las áreas motoras primarias para propiciar una descarga.",
+                    "Porque sustituye por completo la necesidad de insight en tratamientos de largo plazo."
+                ],
+                correct: 0,
+                feedbackSuccess: "¡Exacto! Bajo un pico de desregulación, los niveles masivos de cortisol saturan e inhiben las funciones cognitivas del hipocampo. El sujeto está biológicamente incapacitado para 'comprender' o memorizar la interpretación; primero se debe restaurar la homeostasis.",
+                feedbackFail: "Orientación: Examina el gráfico de Validación Empática para la Desregulación. El axioma de la convergencia dicta: Primero restaurar la homeostasis (bajar el cortisol), luego analizar la interpretación genética."
+            },
+            {
+                q: "Dentro de la monitorización de la contratransferencia somática, ¿qué herramientas biológicas del terapeuta operan directamente como estabilizadores mediante las neuronas espejo? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "El análisis racional silencioso y la rigidez postural defensiva.",
+                    "La respiración pausada y un tono de voz deliberadamente prosódico.",
+                    "La aplicación de interpretaciones mutativas a una velocidad milisegúndica.",
+                    "El uso de variaciones agudas y aceleradas en el ritmo del discurso."
+                ],
+                correct: 1,
+                feedbackSuccess: "¡Excelente! El terapeuta funciona como un bio-sensor clínico. Mediante la comunicación no verbal y el sistema de neuronas espejo, su propia respiración pausada y su prosodia vocal actúan enviando señales de co-regulación biológica que estabilizan el eje HPA del paciente.",
+                feedbackFail: "Orientación: Revisa la estrategia C y el gráfico de Herramientas para la Estabilización Emocional. La calma del clínico no es una postura abstracta, sino un estímulo neurobiológico real para el sistema nervioso del analizado."
+            },
+            {
+                q: "Desde la perspectiva neurobiológica, ¿por qué el 'Encuadre' analítico riguroso (horarios, honorarios y constancia) funciona como un estabilizador alostático? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "Porque eleva la hipervigilancia de la amígdala manteniendo al paciente en estado de alerta.",
+                    "Porque la predictibilidad reduce la incertidumbre, la cual constituye el mayor disparador de cortisol en el cerebro primitivo.",
+                    "Porque fuerza la desconexión del sistema de compromiso social (Porges).",
+                    "Porque su única función es legal y administrativa, careciendo de impacto en el sistema nervioso."
+                ],
+                correct: 1,
+                feedbackSuccess: "¡Es correcto! La incertidumbre es interpretada por el cerebro primitivo como una amenaza biológica latente. Un encuadre sólido proporciona predictibilidad, permitiendo que la corteza prefrontal dorsolateral mantenga bajo control la reactividad amigdalina y evite la hipervigilancia.",
+                feedbackFail: "Orientación: Analiza la estrategia D sobre el Encuadre como Estabilizador Alostático. Ante pacientes con estrés crónico o estructuras traumáticas, la constancia implacable del marco técnico es la primera intervención de seguridad cerebral."
+            },
+            {
+                q: "En la técnica de 'Espejo Inverso' (Micro-intervenciones sobre la prosodia), ¿cuál es el objetivo de responder con un tono grave y pausado ante un paciente acelerado? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "Incrementar la activación simpática para acelerar la catarsis.",
+                    "Activar el Sistema de Compromiso Social, enviando señales inhibitorias al eje HPA a través del núcleo del tracto solitario.",
+                    "Ocultar las emociones del terapeuta mediante la neutralidad punitiva.",
+                    "Provocar una parálisis obsesiva disfuncional mediada por receptores D2."
+                ],
+                correct: 1,
+                feedbackSuccess: "¡Brillante! El nervio vago responde directamente a las frecuencias y dinámicas vocales. La prosodia grave y pausada del terapeuta activa el Sistema de Compromiso Social (Porges), deteniendo de manera refleja la sobreactivación neuroendocrina.",
+                feedbackFail: "Orientación: Revisa la estrategia E (Sincronización Vocal). La música de la voz viaja directo a las estructuras de control autonómico. El espejo inverso busca modular la música alterada del paciente desde el ritmo biológico estabilizado del terapeuta."
+            },
+            {
+                q: "Cuando un paciente sufre un 'secuestro de cortisol' que anula su capacidad simbólica (resistencia o bloqueo), ¿qué áreas prefrontales se reclutan mediante el 'Focusing Transferencial'? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
+                options: [
+                    "Las áreas motoras suplementarias para forzar la actuación somática.",
+                    "La Corteza Prefrontal Ventrolateral mediante el etiquetado afectivo de la sensación física, disminuyendo la actividad amigdalina.",
+                    "El núcleo accumbens para generar una recompensa dopaminérgica aberrante.",
+                    "Se deprime el lóbulo temporal deteniendo las áreas del lenguaje de Broca."
+                ],
+                correct: 1,
+                feedbackSuccess: "¡Espectacular respuesta final! El Focusing Transferencial invita al sujeto a localizar la tensión corporal de la resistencia ('note ese nudo en su estómago'). Al traducir esa señal somática en símbolos representacionales (etiquetado afectivo), se enciende la Corteza Prefrontal Ventrolateral, desactivando el secuestro de la amígdala.",
+                feedbackFail: "Orientación: Analiza la estrategia F y el gráfico dinámico de Focusing. Cuando el cortisol bloquea el pensamiento abstracto, se debe ingresar por el puente del cuerpo. Ponerle palabras a la sensación física recupera la función ejecutiva de simbolización."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let score = 0;
+
+        function inicializarQuiz() {
+            const viewport = document.getElementById('quiz-viewport');
+            viewport.innerHTML = "";
+            document.getElementById('results-card').style.display = "none";
+
+            quizData.forEach((data, index) => {
+                const card = document.createElement('div');
+                card.className = `question-card ${index === 0 ? 'active' : ''}`;
+                card.id = `card-${index}`;
+
+                let optionsHtml = "";
+                data.options.forEach((opt, oIdx) => {
+                    const prefix = String.fromCharCode(65 + oIdx);
+                    optionsHtml += `
+                        <div class="option-item" onclick="seleccionarOpcion(${index}, ${oIdx})">
+                            <span class="option-prefix">${prefix})</span>
+                            <span class="option-text-val">${opt}</span>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="question-meta">Eje Analítico: Dimensión Relacional ${index + 1} de ${quizData.length}</div>
+                    <div class="question-text">${data.q}</div>
+                    <div class="options-list" id="options-${index}">
+                        ${optionsHtml}
+                    </div>
+                    <div class="feedback-container" id="feedback-${index}"></div>
+                    <div class="control-row">
+                        <button class="action-btn" id="btn-${index}" disabled onclick="procesarRespuesta(${index})">Validar Intervención</button>
+                    </div>
+                `;
+                viewport.appendChild(card);
+            });
+            
+            currentQuestionIndex = 0;
+            userAnswers = new Array(quizData.length).fill(null);
+            score = 0;
+        }
+
+        function seleccionarOpcion(qIdx, oIdx) {
+            userAnswers[qIdx] = oIdx;
+            const container = document.getElementById(`options-${qIdx}`);
+            const items = container.getElementsByClassName('option-item');
+            
+            for (let item of items) { item.classList.remove('selected'); }
+            items[oIdx].classList.add('selected');
+            document.getElementById(`btn-${qIdx}`).disabled = false;
+        }
+
+        function procesarRespuesta(qIdx) {
+            const selected = userAnswers[qIdx];
+            const correct = quizData[qIdx].correct;
+            const optionsContainer = document.getElementById(`options-${qIdx}`);
+            const feedbackBox = document.getElementById(`feedback-${qIdx}`);
+            const actionBtn = document.getElementById(`btn-${qIdx}`);
+            const items = optionsContainer.getElementsByClassName('option-item');
+
+            optionsContainer.classList.add('locked');
+
+            if (selected === correct) {
+                score++;
+                items[selected].classList.add('correct-answer');
+                feedbackBox.className = "feedback-container success";
+                feedbackBox.innerHTML = `<div class="feedback-header">✓ Refuerzo de la Evidencia Neurobiológica</div><div>${quizData[qIdx].feedbackSuccess}</div>`;
+            } else {
+                items[selected].classList.add('wrong-answer');
+                items[correct].classList.add('correct-answer');
+                feedbackBox.className = "feedback-container error";
+                feedbackBox.innerHTML = `<div class="feedback-header">⚠️ Línea de Orientación Clínica</div><div>${quizData[qIdx].feedbackFail}</div>`;
+            }
+
+            if (qIdx < quizData.length - 1) {
+                actionBtn.innerText = "Siguiente Dimensión →";
+                actionBtn.onclick = () => avanzarPregunta(qIdx);
+            } else {
+                actionBtn.innerText = "Finalizar Protocolo";
+                actionBtn.onclick = () => mostrarResultadosFinales();
+            }
+        }
+
+        function avanzarPregunta(qIdx) {
+            document.getElementById(`card-${qIdx}`).classList.remove('active');
+            currentQuestionIndex++;
+            document.getElementById(`card-${currentQuestionIndex}`).classList.add('active');
+        }
+
+        function mostrarResultadosFinales() {
+            document.getElementById(`card-${quizData.length - 1}`).classList.remove('active');
+            
+            const resultsCard = document.getElementById('results-card');
+            const scoreNum = document.getElementById('final-score');
+            const dictamenBox = document.getElementById('final-dictamen');
+            
+            scoreNum.innerText = `${score}/${quizData.length}`;
+            resultsCard.style.display = "block";
+
+            let dictamen = "";
+            if (score >= 9) {
+                dictamen = "<strong>Dictamen: Integración Clínico-Alostática de Excelencia.</strong> El profesional demuestra un dominio operativo absoluto sobre la modulación psicodinámica del eje HPA. Posee las competencias periciales necesarias para intervenir como un regulador biológico externo eficaz, maniobrando con precisión en el mapeo de la contratransferencia y el focusing transferencial.";
+            } else if (score >= 7) {
+                dictamen = "<strong>Dictamen: Idoneidad Clínica Convalidada.</strong> Comprensión clara de los mecanismos neuroendocrinos de la alianza y el impacto de la predictibilidad del encuadre. Se aconseja consolidar conceptualmente la diferencia entre regulación (Tiempo 1) e interpretación analítica (Tiempo 2) ante transferencias negativas.";
+            } else {
+                dictamen = "<strong>Dictamen: Revisión Técnica Prescripta.</strong> Se observa una tendencia a priorizar interpretaciones genéticas abstractas en momentos de inundación o pico de desregulación somática del paciente, lo cual es contraproducente para el hipocampo. Se exige un re-estudio minucioso de las herramientas de co-regulación y validación empática del Encuentro 1.";
+            }
+            
+            dictamenBox.innerHTML = dictamen;
+        }
+
+        function reiniciarQuiz() {
+            inicializarQuiz();
+        }
+
+        window.onload = inicializarQuiz;
+    </script>
+</body>
+</html>

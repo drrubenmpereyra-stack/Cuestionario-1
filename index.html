@@ -241,6 +241,16 @@
     </div>
 
     <script>
+        // --- RECEPCIÓN DE NOMBRE DESDE EL AULA ---
+        let nombreAlumno = "Alumno Anónimo"; 
+
+        window.addEventListener("message", (event) => {
+            if (event.data && event.data.tipo === 'SET_USER') {
+                nombreAlumno = event.data.nombre;
+                console.log("Nombre del alumno recibido:", nombreAlumno);
+            }
+        });
+
         const quizData = [
             {
                 q: "Desde el marco de la Clínica de la Convergencia, ¿cuál es la función biológica primordial que ejerce la presencia física y psíquica del terapeuta sobre el paciente? [Referencia: Encuentro 1_Texto 1 parte.pdf]",
@@ -475,25 +485,18 @@
             }
             
             dictamenBox.innerHTML = dictamen;
-           // --- NUEVO BLOQUE: Enviar mensaje al Padre (Aula Virtual) ---
-try {
-    const usuarioNombre = window.parent.usuarioActual ? window.parent.usuarioActual.nombre : "Alumno Anónimo";
-    
-    // Enviamos el dato al aula virtual
-    window.parent.postMessage({
-        tipo: 'GUARDAR_RESULTADO',
-        payload: {
-            alumno: usuarioNombre,
-            test_numero: "Test 1",
-            nota: score + "/10",
-            fecha: new Date().toLocaleString()
-        }
-    }, "*");
-    console.log("Mensaje de resultado enviado al aula.");
-} catch (error) {
-    console.error("Error al enviar mensaje:", error);
-}
-// -----------------------------------------------------------
+
+            // --- ENVÍO A FIREBASE (A TRAVÉS DEL AULA) ---
+            window.parent.postMessage({
+                tipo: 'GUARDAR_RESULTADO',
+                payload: {
+                    alumno: nombreAlumno, 
+                    test_numero: "Test 1",
+                    nota: score + "/10",
+                    fecha: new Date().toLocaleString()
+                }
+            }, "*");
+            console.log("Mensaje de resultado enviado al aula.");
         }
 
         function reiniciarQuiz() {

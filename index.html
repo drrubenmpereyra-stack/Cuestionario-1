@@ -475,22 +475,25 @@
             }
             
             dictamenBox.innerHTML = dictamen;
-            // --- BLOQUE DE ENVÍO A FIREBASE ---
+           // --- NUEVO BLOQUE: Enviar mensaje al Padre (Aula Virtual) ---
 try {
-    const db = window.parent.db; // Accede a la base de datos del aula principal
     const usuarioNombre = window.parent.usuarioActual ? window.parent.usuarioActual.nombre : "Alumno Anónimo";
     
-    db.collection("resultados_test").add({
-        alumno: usuarioNombre,
-        test_numero: "Test 1",
-        nota: score + "/10",
-        fecha: new Date().toLocaleString()
-    });
-    console.log("Resultado enviado a la auditoría.");
+    // Enviamos el dato al aula virtual
+    window.parent.postMessage({
+        tipo: 'GUARDAR_RESULTADO',
+        payload: {
+            alumno: usuarioNombre,
+            test_numero: "Test 1",
+            nota: score + "/10",
+            fecha: new Date().toLocaleString()
+        }
+    }, "*");
+    console.log("Mensaje de resultado enviado al aula.");
 } catch (error) {
-    console.error("Error al enviar resultado:", error);
+    console.error("Error al enviar mensaje:", error);
 }
-// ----------------------------------
+// -----------------------------------------------------------
         }
 
         function reiniciarQuiz() {

@@ -6,10 +6,10 @@
     <title>Evaluación Intersubjetividad - Clínica de la Convergencia</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { 
-            background-color: #000000; 
-            font-family: Arial, sans-serif; 
-            color: #ffffff; 
+        body, html {
+            background-color: #000000;
+            font-family: Arial, sans-serif;
+            color: #ffffff;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -241,15 +241,10 @@
     </div>
 
     <script>
-        // --- RECEPCIÓN DE NOMBRE DESDE EL AULA ---
-        let nombreAlumno = "Alumno Anónimo"; 
-
-        window.addEventListener("message", (event) => {
-            if (event.data && event.data.tipo === 'SET_USER') {
-                nombreAlumno = event.data.nombre;
-                console.log("Nombre del alumno recibido:", nombreAlumno);
-            }
-        });
+       // --- RECEPCIÓN DE NOMBRE DESDE LA URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        let nombreAlumno = urlParams.get('alumno') || "Alumno Anónimo";
+        console.log("Nombre del alumno capturado de la URL:", nombreAlumno);
 
         const quizData = [
             {
@@ -487,15 +482,17 @@
             dictamenBox.innerHTML = dictamen;
 
             // --- ENVÍO A FIREBASE (A TRAVÉS DEL AULA) ---
-            window.parent.postMessage({
-                tipo: 'GUARDAR_RESULTADO',
-                payload: {
-                    alumno: nombreAlumno, 
-                    test_numero: "Test 1",
-                    nota: score + "/10",
-                    fecha: new Date().toLocaleString()
-                }
-            }, "*");
+            if (window.opener) {
+                window.opener.postMessage({
+                    tipo: 'GUARDAR_RESULTADO',
+                    payload: {
+                        alumno: nombreAlumno,
+                        test_numero: "Test 1",
+                        nota: score + "/10",
+                        fecha: new Date().toLocaleString()
+                    }
+                }, "*");
+            }
             console.log("Mensaje de resultado enviado al aula.");
         }
 

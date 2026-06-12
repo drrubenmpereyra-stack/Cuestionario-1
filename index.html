@@ -475,6 +475,22 @@
             }
             
             dictamenBox.innerHTML = dictamen;
+            // --- BLOQUE DE ENVÍO A FIREBASE ---
+try {
+    const db = window.parent.db; // Accede a la base de datos del aula principal
+    const usuarioNombre = window.parent.usuarioActual ? window.parent.usuarioActual.nombre : "Alumno Anónimo";
+    
+    db.collection("resultados_test").add({
+        alumno: usuarioNombre,
+        test_numero: "Test 1",
+        nota: score + "/10",
+        fecha: new Date().toLocaleString()
+    });
+    console.log("Resultado enviado a la auditoría.");
+} catch (error) {
+    console.error("Error al enviar resultado:", error);
+}
+// ----------------------------------
         }
 
         function reiniciarQuiz() {

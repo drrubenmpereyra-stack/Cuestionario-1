@@ -244,7 +244,21 @@
     <input type="text" id="input-nombre" placeholder="Ingresa tu nombre y apellido" required style="padding: 10px; width: 80%; border: 1px solid #ccc; border-radius: 4px;">
 </div>
     <script>
-      
+ // --- CONFIGURACIÓN FIREBASE PARA EL FORMULARIO ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyD47_2UtWLFI_VRVvvXVAqn4zZzZ4d1ggo",
+            authDomain: "av-clinica-convergencia.firebaseapp.com",
+            databaseURL: "https://av-clinica-convergencia-default-rtdb.firebaseio.com",
+            projectId: "av-clinica-convergencia",
+            storageBucket: "av-clinica-convergencia.firebasestorage.app",
+            messagingSenderId: "939404425675",
+            appId: "1:939404425675:web:8cfae157099efabd741e4e"
+        };
+        // Inicializar si no está ya inicializado
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();     
 
         const quizData = [
             {
@@ -489,22 +503,21 @@ function mostrarResultadosFinales() {
             
             dictamenBox.innerHTML = dictamen;
 
-            // --- ENVÍO A FIREBASE (A TRAVÉS DEL AULA) ---
-            if (window.opener) {
-                window.opener.postMessage({
-                    tipo: 'GUARDAR_RESULTADO',
-                    payload: {
-                        alumno: nombreIngresado, // Usamos el nombre ingresado en el input
-                        test_numero: "Test 1",
-                        nota: score + "/10",
-                        fecha: new Date().toLocaleString()
-                    }
-                }, "*");
-                
-                // Feedback visual en la pantalla de resultados
-                dictamenBox.innerHTML += `<p style="color: #00FF88; margin-top: 15px;">✓ Resultados registrados correctamente para: ${nombreIngresado}</p>`;
-            }
-            console.log("Mensaje de resultado enviado al aula para:", nombreIngresado);
+            // --- ENVÍO DIRECTO A FIRESTORE ---
+            db.collection("resultados").add({
+                alumno: nombreIngresado,
+                test_numero: "Test 1",
+                nota: score + "/10",
+                fecha: new Date().toLocaleString()
+            })
+            .then(() => {
+                console.log("Datos guardados directamente en Firestore para:", nombreIngresado);
+                dictamenBox.innerHTML += `<p style="color: #00FF88; margin-top: 15px;">✓ Resultados guardados exitosamente en la base de datos.</p>`;
+            })
+            .catch((error) => {
+                console.error("Error al guardar en la base de datos: ", error);
+                dictamenBox.innerHTML += `<p style="color: #FF0000; margin-top: 15px;">X Error al guardar: ${error.message}</p>`;
+            });
         }
        
         function reiniciarQuiz() {

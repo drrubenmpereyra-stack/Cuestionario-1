@@ -239,12 +239,12 @@
             <button class="action-btn" style="margin-top: 15px;" onclick="reiniciarQuiz()">Reiniciar Módulo</button>
         </div>
     </div>
-
+<div id="identificacion-card" style="border: 2px solid #D4AF37; padding: 20px; text-align: center; margin-bottom: 20px; background-color: #f9f9f9;">
+    <h3 style="margin-top: 0;">Identificación del Estudiante</h3>
+    <input type="text" id="input-nombre" placeholder="Ingresa tu nombre y apellido" required style="padding: 10px; width: 80%; border: 1px solid #ccc; border-radius: 4px;">
+</div>
     <script>
-       // --- RECEPCIÓN DE NOMBRE DESDE LA URL ---
-        const urlParams = new URLSearchParams(window.location.search);
-        let nombreAlumno = urlParams.get('alumno') || "Alumno Anónimo";
-        console.log("Nombre del alumno capturado de la URL:", nombreAlumno);
+      
 
         const quizData = [
             {
@@ -459,8 +459,16 @@
             currentQuestionIndex++;
             document.getElementById(`card-${currentQuestionIndex}`).classList.add('active');
         }
+function mostrarResultadosFinales() {
+            // 1. Capturamos el nombre desde el input que agregaste al HTML
+            const nombreIngresado = document.getElementById('input-nombre').value;
 
-        function mostrarResultadosFinales() {
+            // 2. Validación obligatoria antes de proceder
+            if (!nombreIngresado || nombreIngresado.trim() === "") {
+                alert("Por favor, ingresa tu nombre y apellido antes de finalizar.");
+                return; // Detiene la función si el campo está vacío
+            }
+
             document.getElementById(`card-${quizData.length - 1}`).classList.remove('active');
             
             const resultsCard = document.getElementById('results-card');
@@ -486,16 +494,19 @@
                 window.opener.postMessage({
                     tipo: 'GUARDAR_RESULTADO',
                     payload: {
-                        alumno: nombreAlumno,
+                        alumno: nombreIngresado, // Usamos el nombre ingresado en el input
                         test_numero: "Test 1",
                         nota: score + "/10",
                         fecha: new Date().toLocaleString()
                     }
                 }, "*");
+                
+                // Feedback visual en la pantalla de resultados
+                dictamenBox.innerHTML += `<p style="color: #00FF88; margin-top: 15px;">✓ Resultados registrados correctamente para: ${nombreIngresado}</p>`;
             }
-            console.log("Mensaje de resultado enviado al aula.");
+            console.log("Mensaje de resultado enviado al aula para:", nombreIngresado);
         }
-
+       
         function reiniciarQuiz() {
             inicializarQuiz();
         }

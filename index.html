@@ -243,7 +243,7 @@
     </div>
 <div id="identificacion-card" style="border: 2px solid #D4AF37; padding: 20px; text-align: center; margin-bottom: 20px; background-color: #f9f9f9;">
     <h3 style="margin-top: 0;">Identificación del Estudiante</h3>
-    <input type="text" id="input-nombre" placeholder="Ingresa tu nombre y apellido" required style="padding: 10px; width: 80%; border: 1px solid #ccc; border-radius: 4px;">
+    <input type="text" id="input-nombre" placeholder="APELLIDO Nombre (Ej: PEREZ Juan)" required style="padding: 10px; width: 80%; border: 1px solid #ccc; border-radius: 4px;">
 </div>
     <script>
  // --- CONFIGURACIÓN FIREBASE PARA EL FORMULARIO ---
@@ -476,50 +476,54 @@
             document.getElementById(`card-${currentQuestionIndex}`).classList.add('active');
         }
 function mostrarResultadosFinales() {
-            // 1. Capturamos el nombre desde el input que agregaste al HTML
-            const nombreIngresado = document.getElementById('input-nombre').value;
+    // 1. Capturamos el nombre
+    const nombreIngresado = document.getElementById('input-nombre').value;
 
-            // 2. Validación obligatoria antes de proceder
-            if (!nombreIngresado || nombreIngresado.trim() === "") {
-                alert("Por favor, ingresa tu nombre y apellido antes de finalizar.");
-                return; // Detiene la función si el campo está vacío
-            }
+    // 2. Validación estricta de formato: APELLIDO Nombre
+    // Esta expresión exige: letras mayúsculas, un espacio, y letras (mayús/minús)
+    const formatoValido = /^[A-ZÁÉÍÓÚÑ]+ [A-Za-zÁÉÍÓÚÑ]+$/;
+    
+    if (!formatoValido.test(nombreIngresado)) {
+        alert("Error: Debe ingresar APELLIDO Nombre (Ejemplo: PEREZ Juan). Sin este formato, el sistema no puede registrar su calificación.");
+        return; // Detiene el proceso si no se respeta el formato
+    }
 
-            document.getElementById(`card-${quizData.length - 1}`).classList.remove('active');
-            
-            const resultsCard = document.getElementById('results-card');
-            const scoreNum = document.getElementById('final-score');
-            const dictamenBox = document.getElementById('final-dictamen');
-            
-            scoreNum.innerText = `${score}/${quizData.length}`;
-            resultsCard.style.display = "block";
+    document.getElementById(`card-${quizData.length - 1}`).classList.remove('active');
+    
+    const resultsCard = document.getElementById('results-card');
+    const scoreNum = document.getElementById('final-score');
+    const dictamenBox = document.getElementById('final-dictamen');
+    
+    scoreNum.innerText = `${score}/${quizData.length}`;
+    resultsCard.style.display = "block";
 
-            let dictamen = "";
-            if (score >= 9) {
-                dictamen = "<strong>Dictamen: Integración Clínico-Alostática de Excelencia.</strong> El profesional demuestra un dominio operativo absoluto sobre la modulación psicodinámica del eje HPA. Posee las competencias periciales necesarias para intervenir como un regulador biológico externo eficaz, maniobrando con precisión en el mapeo de la contratransferencia y el focusing transferencial.";
-            } else if (score >= 7) {
-                dictamen = "<strong>Dictamen: Idoneidad Clínica Convalidada.</strong> Comprensión clara de los mecanismos neuroendocrinos de la alianza y el impacto de la predictibilidad del encuadre. Se aconseja consolidar conceptualmente la diferencia entre regulación (Tiempo 1) e interpretación analítica (Tiempo 2) ante transferencias negativas.";
-            } else {
-                dictamen = "<strong>Dictamen: Revisión Técnica Prescripta.</strong> Se observa una tendencia a priorizar interpretaciones genéticas abstractas en momentos de inundación o pico de desregulación somática del paciente, lo cual es contraproducente para el hipocampo. Se exige un re-estudio minucioso de las herramientas de co-regulación y validación empática del Encuentro 1.";
-            }
-            
-            dictamenBox.innerHTML = dictamen;
+    let dictamen = "";
+    if (score >= 9) {
+        dictamen = "<strong>Dictamen: Integración Clínico-Alostática de Excelencia.</strong> El profesional demuestra un dominio operativo absoluto sobre la modulación psicodinámica del eje HPA.";
+    } else if (score >= 7) {
+        dictamen = "<strong>Dictamen: Idoneidad Clínica Convalidada.</strong> Comprensión clara de los mecanismos neuroendocrinos de la alianza y el impacto de la predictibilidad del encuadre.";
+    } else {
+        dictamen = "<strong>Dictamen: Revisión Técnica Prescripta.</strong> Se observa una tendencia a priorizar interpretaciones genéticas abstractas en momentos de inundación o pico de desregulación somática.";
+    }
+    
+    dictamenBox.innerHTML = dictamen;
 
-  // --- ENVÍO DIRECTO A FIRESTORE ---
-db.collection("resultados_test").add({ // 1. Cambiamos a la colección correcta
-    nombre: nombreIngresado,          // 2. Usamos 'nombre' en vez de 'alumno'
-    fecha: new Date().toISOString(),  // 3. Formato estándar para base de datos
-    nota: score,                      // 4. Guardamos como número, no como texto
-    Test_numero: "Test 1"             // 5. Mantenemos el formato exacto
-})
-.then(() => {
-    console.log("Datos guardados exitosamente.");
-    dictamenBox.innerHTML += `<p style="color: #00FF88; margin-top: 15px;">✓ Resultados guardados exitosamente.</p>`;
-})
-.catch((error) => {
-    console.error("Error al guardar: ", error);
-});
-        }
+    // --- ENVÍO DIRECTO A FIRESTORE ---
+    db.collection("resultados_test").add({
+        nombre: nombreIngresado,
+        fecha: new Date().toISOString(),
+        nota: score,
+        Test_numero: "Test 1"
+    })
+    .then(() => {
+        console.log("Datos guardados exitosamente.");
+        dictamenBox.innerHTML += `<p style="color: #00FF88; margin-top: 15px;">✓ Resultados guardados exitosamente.</p>`;
+    })
+    .catch((error) => {
+        console.error("Error al guardar: ", error);
+        dictamenBox.innerHTML += `<p style="color: #FF0000; margin-top: 15px;">X Error al guardar.</p>`;
+    });
+}
        
         function reiniciarQuiz() {
             inicializarQuiz();

@@ -505,21 +505,20 @@ function mostrarResultadosFinales() {
             
             dictamenBox.innerHTML = dictamen;
 
-            // --- ENVÍO DIRECTO A FIRESTORE ---
-            db.collection("resultados").add({
-                alumno: nombreIngresado,
-                test_numero: "Test 1",
-                nota: score + "/10",
-                fecha: new Date().toLocaleString()
-            })
-            .then(() => {
-                console.log("Datos guardados directamente en Firestore para:", nombreIngresado);
-                dictamenBox.innerHTML += `<p style="color: #00FF88; margin-top: 15px;">✓ Resultados guardados exitosamente en la base de datos.</p>`;
-            })
-            .catch((error) => {
-                console.error("Error al guardar en la base de datos: ", error);
-                dictamenBox.innerHTML += `<p style="color: #FF0000; margin-top: 15px;">X Error al guardar: ${error.message}</p>`;
-            });
+  // --- ENVÍO DIRECTO A FIRESTORE ---
+db.collection("resultados_test").add({ // 1. Cambiamos a la colección correcta
+    nombre: nombreIngresado,          // 2. Usamos 'nombre' en vez de 'alumno'
+    fecha: new Date().toISOString(),  // 3. Formato estándar para base de datos
+    nota: score,                      // 4. Guardamos como número, no como texto
+    Test_numero: "Test 1"             // 5. Mantenemos el formato exacto
+})
+.then(() => {
+    console.log("Datos guardados exitosamente.");
+    dictamenBox.innerHTML += `<p style="color: #00FF88; margin-top: 15px;">✓ Resultados guardados exitosamente.</p>`;
+})
+.catch((error) => {
+    console.error("Error al guardar: ", error);
+});
         }
        
         function reiniciarQuiz() {
